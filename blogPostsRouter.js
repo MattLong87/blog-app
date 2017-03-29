@@ -16,6 +16,56 @@ BlogPosts.create("Third post", "Third post. Still about the same", "Matthew");
 
 router.get("/", (req, res) => {
 	res.json(BlogPosts.get());
-})
+});
+
+router.post("/", jsonParser, (req, res) => {
+	//validate required fields are there. Publishdate is optional
+	const requiredFields = ["title", "content", "author"];
+	for (let i = 0; i < requiredFields.length; i++){
+		const field = requiredFields[i];
+		if (!(field in req.body)){
+			const message = `Missing \`${field}\` in request body`;
+			console.error(message);
+			return res.status(400).send(message);
+		}
+	}
+	const title = req.body.title;
+	const content = req.body.content;
+	const author = req.body.author;
+	const publishDate = req.body.publishDate ? req.body.publishDate : null;
+	const post = publishDate ? BlogPosts.create(title, content, author, publishDate) : BlogPosts.create(title, content, author);
+	res.status(201).json(post);
+});
+
+router.delete("/:id", (req, res) => {
+	BlogPosts.delete(req.params.id);
+	console.log(`Deleted post with ID \`${req.params.id}\``);
+	res.status(204).end();
+});
+
+router.put("/:id", jsonParser, (req, res) => {
+	const requiredFields = ["title", "author", "content", "id"];
+	for (let i = 0; i < requiredFields.length; i++){
+		const field = requiredFields[i];
+		if (!(field in req.body)){
+			const message = `Missing \`${field}\` in request body`;
+			console.error(message);
+			return res.status(400).send(message);
+		}
+	}
+	if (req.params.id !== req.body.id){
+		const message = `Request path id \`${req.params.id}\` and body id \`${req.body.id}\` must match.`;
+		console.error(message);
+		return res.status(400).send(message);
+	}
+	console.log(`Updating post \`${req.params.id}\``);
+	const updatedPost = BlogPosts.update({
+		id: req.params.id,
+		title: req.body.title,
+		author: req.body.author,
+		content: req.body.content
+	});
+	res.status(200).json(updatedPost);
+});
 
 module.exports = router;

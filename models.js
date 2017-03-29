@@ -17,6 +17,7 @@ function StorageException(message) {
 
 const BlogPosts = {
   create: function(title, content, author, publishDate) {
+    const requiredFields = ["title", "content", "author"];
     const post = {
       id: uuid.v4(),
       title: title,
@@ -24,6 +25,11 @@ const BlogPosts = {
       author: author,
       publishDate: publishDate || Date.now()
     };
+    const missingFields = requiredFields.filter( field => !post[field] );
+    console.log(missingFields);
+     if (missingFields.length){
+       return {error: {missingFields}};
+     }  
     this.posts.push(post);
     return post;
   },

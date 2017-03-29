@@ -19,21 +19,14 @@ router.get("/", (req, res) => {
 });
 
 router.post("/", jsonParser, (req, res) => {
-	//validate required fields are there. Publishdate is optional
-	const requiredFields = ["title", "content", "author"];
-	for (let i = 0; i < requiredFields.length; i++){
-		const field = requiredFields[i];
-		if (!(field in req.body)){
-			const message = `Missing \`${field}\` in request body`;
-			console.error(message);
-			return res.status(400).send(message);
-		}
-	}
 	const title = req.body.title;
 	const content = req.body.content;
 	const author = req.body.author;
-	const publishDate = req.body.publishDate ? req.body.publishDate : null;
-	const post = publishDate ? BlogPosts.create(title, content, author, publishDate) : BlogPosts.create(title, content, author);
+	const publishDate = req.body.publishDate;
+	const post = BlogPosts.create(title, content, author, publishDate);
+	if (post.error){
+		return res.status(500).json(post);
+	}
 	res.status(201).json(post);
 });
 
